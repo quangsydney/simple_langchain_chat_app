@@ -3,5 +3,6 @@ openai
 langchain
 langchain-community
 langchain-core
-ollama
-pydantic-core
+gpt4all
+# ollama
+# pydantic-core
