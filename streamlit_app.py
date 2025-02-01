@@ -5,7 +5,7 @@ from utils.chain import get_conversation_chain
 st.set_page_config(page_title=" Conversational Bot!")
 st.title("Simple Gemini Chatbot 💬")
 
-gemini_api_key = st.sidebar.text_input('Google Gemini API Key')
+gemini_api_key = st.sidebar.text_input('Google Gemini API Key', type="password")
 
 # initialize the messages key in streamlit session to store message history
 if "messages" not in st.session_state:
