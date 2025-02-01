@@ -4,7 +4,6 @@ langchain
 langchain-community
 langchain-core
 langchain-google-genai
-python-dotenv
 
 # ollama
 # pydantic-core
