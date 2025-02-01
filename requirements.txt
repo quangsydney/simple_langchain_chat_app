@@ -3,5 +3,8 @@ openai
 langchain
 langchain-community
 langchain-core
-ollama
-pydantic-core
+langchain-google-genai
+python-dotenv
+
+# ollama
+# pydantic-core

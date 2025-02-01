@@ -1,0 +1,153 @@
+# import streamlit as st
+
+# import ollama
+# import os
+# os.system('ollama pull deepseek-r1:1.5b')
+
+# st.title('Simple chat app')
+
+# messages = []
+# USER = 'user'
+# ASSISTANT = 'assistant'
+
+# def add_history(content, role):
+#     messages.append({'role': role, 'content': content})
+
+# def generate_response(input_text):
+#     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+#     # st.info(llm(input_text))
+
+#     add_history(input_text, USER)
+#     response = ollama.chat(
+#             # model="deepseek-r1:1.5b",
+#             model="gemma2:2b",
+#             messages=messages,
+#             stream=True
+#             )
+#     complete_message = ""
+#     for line in response:
+#         complete_message += line['message']['content']
+#         print(line['message']['content'], end='', flush=True)
+#     st.info(complete_message)
+#     add_history(complete_message, ASSISTANT)
+
+# with st.form('my_form'):
+#     text = st.text_area('Enter text: ', 'Give 2 advantages of reading.')
+#     submitted = st.form_submit_button('Submit')
+#     generate_response(text)
+
+# def chat(message):
+#     add_history(message, USER)
+#     response = ollama.chat(
+#         # model="gemma2:2b", 
+#         model="deepseek-r1:1.5b", 
+#         messages=messages, 
+#         stream=True)
+#     complete_message = ''
+#     for line in response:
+#         complete_message += line['message']['content']
+#         print(line['message']['content'], end='', flush=True)
+#     add_history(complete_message, ASSISTANT)
+
+# while True:
+#     print('\nQ to quit')
+#     prompt = input('Enter your message: ')
+#     if prompt.lower() == 'q':
+#         break
+#     else:
+#         chat(prompt)
+
+
+
+
+# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# https://python.langchain.com/docs/integrations/chat/google_generative_ai/
+# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+
+import streamlit as st
+from langchain_core.prompts import PromptTemplate
+from langchain.chains import LLMChain
+from langchain.memory import ConversationBufferWindowMemory
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+import os
+# gemini_api_key = st.sidebar.text_input('Google Gemini API Key')
+gemini_api_key = "AIzaSyBLjsAhyqFMjkZyhqfHSGDWhImpfSlNFe0"
+
+@st.cache_resource
+def LLM_chain_response():
+    prompt = PromptTemplate(
+        input_variables=["history", "human_input"],
+        template=st.secrets["template"]
+    )
+
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-1.5-flash",
+        google_api_key=gemini_api_key,
+        temperature=0,
+        max_tokens=None,
+        timeout=None,
+        max_retries=2,
+    )
+
+    chain_ = LLMChain(
+        llm=llm,
+        prompt=prompt,
+        verbose=True,
+        memory=ConversationBufferWindowMemory(k=10),
+    )
+
+    return chain_
+
+if "chat_msg" not in st.session_state:
+    st.session_state.chat_msg = []
+
+
+st.title('Simple chat app')
+with st.form('my_form'):
+    user_input = st.text_area('Enter text: ',)
+    submitted = st.form_submit_button('Submit')
+    if user_input:
+        chain_ = LLM_chain_response()
+        ai_msg = chain_.run(user_input)
+        st.info(ai_msg.content)
+
+
+# messages = []
+# USER = 'user'
+# ASSISTANT = 'assistant'
+
+# def add_history(content, role):
+#     messages.append({"role": role, "content" : content})
+
+# # def chat(message):
+# #     add_history(message, USER)
+# #     ai_msg = llm.invoke(messages)
+# #     print("AI model: ", ai_msg.content)
+# #     add_history(ai_msg.content, ASSISTANT)
+
+# # while True:
+# #     print('\nQ to quit')
+# #     prompt = input('Enter your message: ')
+# #     if prompt.lower() == 'q':
+# #         break
+# #     else:
+# #         chat(prompt)
+
+
+
+
+# def generate_response(input_text):
+#     add_history(input_text, USER)
+#     ai_msg = llm.invoke(messages)
+#     st.info(ai_msg.content)
+#     add_history(ai_msg.content, ASSISTANT)
+
+# st.title('Simple chat app')
+# with st.form('my_form'):
+#     text = st.text_area('Enter text: ', 'Give 2 advantages of reading.')
+#     submitted = st.form_submit_button('Submit')
+#     generate_response(text)
+

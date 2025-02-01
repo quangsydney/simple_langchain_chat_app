@@ -1,63 +1,36 @@
 import streamlit as st
-# from langchain.llms import openai
-import ollama
-import os
+from utils.chain import get_conversation_chain
 
-os.system('ollama pull deepseek-r1:1.5b')
+# let's  create the streamlit app
+st.set_page_config(page_title=" Conversational Bot!")
+st.title("Simple Gemini Chatbot 💬")
 
-st.title('Quickstart App')
-# openai_api_key = st.sidebar.text_input('OpenAI API Key')
+gemini_api_key = st.sidebar.text_input('Google Gemini API Key')
 
-messages = []
-# Roles
-USER = 'user'
-ASSISTANT = 'assistant'
+# initialize the messages key in streamlit session to store message history
+if "messages" not in st.session_state:
+    # add greeting message to user
+    st.session_state.messages = [{"role": "assistant", "content": "Hi I am a Bot, How can I help you?"}]
 
-def add_history(content, role):
-    messages.append({'role': role, 'content': content})
+# if there are messages already in session, write them on app
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
 
-def generate_response(input_text):
-    # llm = openai.OpenAI(openai_api_key=openai_api_key)
-    # st.info(llm(input_text))
+prompt = st.chat_input("Say Something")
 
-    add_history(input_text, USER)
-    response = ollama.chat(
-            # model="deepseek-r1:1.5b",
-            model="gemma2:2b",
-            messages=messages,
-            stream=True
-            )
-    complete_message = ""
-    for line in response:
-        complete_message += line['message']['content']
-        print(line['message']['content'], end='', flush=True)
-    st.info(complete_message)
-    add_history(complete_message, ASSISTANT)
+if prompt is not None and prompt != "":
+    # add the message to chat message container
+    if st.session_state.messages[-1]["role"] != "user":
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # display to the streamlit application
+        message = st.chat_message("user")
+        message.write(f"{prompt}")
 
-with st.form('my_form'):
-    text = st.text_area('Enter text: ', 'Give 2 advantages of reading.')
-    submitted = st.form_submit_button('Submit')
-    # if not openai_api_key.startswith('sk-'):
-    #     st.warning("Please enter your OpenAI API key!", icon="⚠")
-    # elif submitted:
-    #     generate_response(text)
-    generate_response(text)
+    llm, conversational_chain = get_conversation_chain(gemini_api_key)
+    response = conversational_chain.predict(input=prompt)
 
-
-
-# def chat(message):
-#     add_history(message, USER)
-#     response = ollama.chat(model="gemma2:2b", messages=messages, stream=True)
-#     complete_message = ''
-#     for line in response:
-#         complete_message += line['message']['content']
-#         print(line['message']['content'], end='', flush=True)
-#     add_history(complete_message, ASSISTANT)
-
-# while True:
-#     print('\nQ to quit')
-#     prompt = input('Enter your message: ')
-#     if prompt.lower() == 'q':
-#         break
-#     else:
-#         chat(prompt)
+    if st.session_state.messages[-1]["role"] != "assistant":
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
+            st.write(response)
